@@ -1,0 +1,7 @@
+# generated build intermediates (recreated by tools/split_leblearn.py)
+tools/_leb_style.css
+tools/_leb_sections_core.html
+tools/_leb_sections_rest.html
+
+.DS_Store
+node_modules/

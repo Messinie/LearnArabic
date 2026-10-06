@@ -1,3 +1,7 @@
+> **Superseded.** All of these modules are now merged into a single app —
+> open `index.html` (the LebLearn Hub) and see `README.md`.
+> This file is kept as a record of the earlier structure.
+
 # Al-Manara Arabic Learning Hub - New Structure
 
 ## Overview

@@ -88,4 +88,6 @@ $('#resetBtn').addEventListener('click',()=>{if(confirm('Delete all saved respon
 let fs=23;$('#fontUp').addEventListener('click',()=>{fs=Math.min(32,fs+1);$('#readingCard').style.fontSize=fs+'px'});$('#fontDown').addEventListener('click',()=>{fs=Math.max(17,fs-1);$('#readingCard').style.fontSize=fs+'px'});$('#focusToggle').addEventListener('click',()=>$('#readingCard').classList.toggle('focus-mode'));$$('.reading-paragraph').forEach(p=>p.addEventListener('click',()=>{$$('.reading-paragraph').forEach(x=>x.classList.remove('active'));p.classList.add('active')}));
 restore();
 </script>
+    <!-- LebLearn hub shell -->
+    <script src="../assets/leb-shell.js" defer></script>
 </body></html>
