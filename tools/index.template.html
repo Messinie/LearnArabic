@@ -10,16 +10,10 @@
     <style>
 {{LEB_STYLE}}
         /* ---------- merged-hub additions ---------- */
-        html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+        html { scroll-behavior: smooth; scroll-padding-top: 120px; }
 
-        .line-clamp-2 {
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .line-clamp-3 {
-            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
+        .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .line-clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 
         #viewer-frame { background: #f8fafc; }
 
@@ -27,229 +21,431 @@
         .hub-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 99px; }
         .hub-scroll::-webkit-scrollbar-track { background: transparent; }
 
-        .kbd {
-            font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
-            border: 1px solid #334155; background: #0f172a; color: #94a3b8;
+        .kbd { font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px;
+               border:1px solid #334155; background:#0f172a; color:#94a3b8; }
+
+        /* visible focus for keyboard users everywhere */
+        a:focus-visible, button:focus-visible, input:focus-visible,
+        select:focus-visible, [tabindex]:focus-visible {
+            outline: 2px solid #818cf8; outline-offset: 2px; border-radius: 12px;
+        }
+        .skip-link {
+            position:absolute; left:-9999px; top:0; z-index:300;
+            background:#6366f1; color:#fff; padding:10px 18px; border-radius:0 0 12px 0; font-weight:700;
+        }
+        .skip-link:focus { left:0; }
+        .sr-only {
+            position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+            overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+        }
+
+        /* tabs */
+        .tab-btn { position:relative; white-space:nowrap; }
+        .tab-btn[aria-selected="true"] { color:#fff; background:#1e293b; }
+        .tab-btn[aria-selected="true"]:after {
+            content:''; position:absolute; left:14px; right:14px; bottom:-9px; height:2px;
+            background:linear-gradient(to right,#6366f1,#a855f7); border-radius:2px;
+        }
+        [role="tabpanel"][hidden] { display:none; }
+
+        /* charts */
+        .bar-col { transition: opacity .15s ease; cursor:default; }
+        .bar-col:hover { opacity:.75; }
+        .chart-card { background:rgba(15,23,42,.75); border:1px solid rgba(148,163,184,.12); }
+        .mini-bar { transition: width .5s cubic-bezier(.34,1.56,.64,1); }
+        .click-row { cursor:pointer; }
+        .click-row:hover .mini-bar-track { background:#334155; }
+
+        /* respect reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after {
+                animation-duration:.001ms !important; animation-iteration-count:1 !important;
+                transition-duration:.001ms !important;
+            }
+            .modern-btn:after { display:none; }
         }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-200">
+    <a href="#main" class="skip-link">Skip to content</a>
+
     <!-- ===================================================================
-         NAV — one bar for the whole merged platform
+         NAV + TABS — the whole merged platform in one bar
          =================================================================== -->
-    <nav class="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/80 backdrop-blur-2xl">
-        <div class="max-w-screen-2xl mx-auto">
-            <div class="px-5 md:px-8 py-4 flex items-center justify-between gap-x-4">
-                <a href="#dashboard" class="flex items-center gap-x-2.5 shrink-0">
-                    <div class="w-11 h-11 bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center rounded-2xl shadow-inner">
-                        <i class="fa-solid fa-language text-white text-2xl"></i>
+    <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur-2xl">
+        <div class="max-w-screen-2xl mx-auto px-4 md:px-7">
+            <div class="py-3 flex items-center justify-between gap-x-4">
+                <a href="#overview" onclick="HUB.tab('overview');return false" class="flex items-center gap-x-2.5 shrink-0">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center rounded-2xl shadow-inner">
+                        <i class="fa-solid fa-language text-white text-xl" aria-hidden="true"></i>
                     </div>
                     <div class="leading-none">
-                        <span class="font-display text-2xl md:text-3xl font-extrabold tracking-tighter">LebLearn</span>
+                        <span class="font-display text-2xl font-extrabold tracking-tighter">LebLearn</span>
                         <span class="text-[10px] tracking-[2.5px] font-medium text-indigo-300 ml-0.5">HUB</span>
-                        <div class="text-[10px] text-slate-500 font-semibold tracking-wide mt-0.5 hidden sm:block">
-                            Lebanese SRS + the full Arabic library
-                        </div>
                     </div>
                 </a>
 
-                <div class="hidden xl:flex items-center gap-x-0.5 text-sm font-medium">
-                    <a href="#dashboard" class="nav-link px-4 py-2 text-slate-300 hover:text-white nav-active">Dashboard</a>
-                    <a href="#anki" class="nav-link px-4 py-2 text-slate-300 hover:text-white">Anki SRS</a>
-                    <a href="#library" class="nav-link px-4 py-2 text-slate-300 hover:text-white">Library</a>
-                    <a href="#modules" class="nav-link px-4 py-2 text-slate-300 hover:text-white">Modules</a>
-                    <a href="#translit" class="nav-link px-4 py-2 text-slate-300 hover:text-white">Translit Lab</a>
-                    <a href="#practice" class="nav-link px-4 py-2 text-slate-300 hover:text-white">Practice</a>
-                    <a href="#vocab" class="nav-link px-4 py-2 text-slate-300 hover:text-white">Dictionary</a>
+                <!-- live mini-status: always visible, real numbers -->
+                <div class="hidden md:flex items-center gap-x-2 text-xs">
+                    <button onclick="startAnkiSession()" class="flex items-center gap-x-2 bg-indigo-500/15 border border-indigo-500/40 hover:border-indigo-400 rounded-2xl px-3 py-1.5 transition-colors">
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" aria-hidden="true"></span>
+                        <span class="font-extrabold stat-number" id="nav-due">—</span>
+                        <span class="text-slate-300">due now</span>
+                    </button>
+                    <div class="hidden lg:flex items-center gap-x-2 bg-slate-900 border border-slate-800 rounded-2xl px-3 py-1.5">
+                        <span class="font-extrabold stat-number" id="nav-mastered">—</span>
+                        <span class="text-slate-400">mastered</span>
+                        <span class="w-px h-3 bg-slate-700" aria-hidden="true"></span>
+                        <span class="font-extrabold stat-number" id="nav-pages">—</span>
+                        <span class="text-slate-400">lessons</span>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-x-3">
-                    <button onclick="document.getElementById('library').scrollIntoView({behavior:'smooth'});document.getElementById('library-search').focus()"
-                            class="hidden md:flex items-center gap-x-2 bg-slate-900 border border-slate-700 hover:border-slate-500 rounded-3xl px-3.5 py-2 text-sm text-slate-400 transition-colors">
-                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                        <span>Search all lessons</span>
-                        <span class="kbd">⌘K</span>
+                <div class="flex items-center gap-x-2">
+                    <button onclick="HUB.focusSearch()"
+                            class="flex items-center gap-x-2 bg-slate-900 border border-slate-700 hover:border-slate-500 rounded-2xl px-3 py-2 text-sm text-slate-400 transition-colors"
+                            aria-label="Search all lessons">
+                        <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
+                        <span class="hidden sm:inline">Search</span>
+                        <span class="kbd hidden lg:inline">⌘K</span>
                     </button>
-                    <div class="hidden lg:flex items-center gap-x-2 bg-slate-900 border border-slate-700 rounded-3xl px-3 py-1.5 text-sm">
-                        <i class="fa-solid fa-fire text-orange-400"></i>
-                        <span class="font-extrabold">47</span>
-                        <span class="text-xs font-bold">day streak</span>
-                        <div class="h-3 w-px bg-slate-700"></div>
-                        <span class="font-semibold text-emerald-300">Level 8</span>
-                    </div>
-                    <div class="xl:hidden flex items-center">
-                        <button onclick="showMobileNav()" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white">
-                            <i class="fa-solid fa-bars text-xl"></i>
-                        </button>
-                    </div>
+                    <button onclick="showSettings()" class="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 flex items-center justify-center" aria-label="Settings">
+                        <i class="fa-solid fa-gear text-slate-300" aria-hidden="true"></i>
+                    </button>
                 </div>
+            </div>
+
+            <!-- primary tabs -->
+            <div role="tablist" aria-label="Main sections" id="tabbar"
+                 class="flex items-center gap-x-1 overflow-x-auto hub-scroll pb-2 -mb-px text-sm font-semibold">
+                <button role="tab" id="tab-overview" data-tab="overview" aria-controls="panel-overview" aria-selected="true"
+                        class="tab-btn px-4 py-2 rounded-2xl text-slate-300 hover:text-white hover:bg-slate-900">
+                    <i class="fa-solid fa-gauge-high mr-2 text-indigo-300" aria-hidden="true"></i>Overview
+                </button>
+                <button role="tab" id="tab-study" data-tab="study" aria-controls="panel-study" aria-selected="false" tabindex="-1"
+                        class="tab-btn px-4 py-2 rounded-2xl text-slate-300 hover:text-white hover:bg-slate-900">
+                    <i class="fa-solid fa-layer-group mr-2 text-violet-300" aria-hidden="true"></i>Study
+                    <span class="ml-1.5 text-[10px] font-extrabold bg-indigo-500/20 text-indigo-200 px-1.5 py-0.5 rounded-lg" id="tab-due-badge">0</span>
+                </button>
+                <button role="tab" id="tab-library" data-tab="library" aria-controls="panel-library" aria-selected="false" tabindex="-1"
+                        class="tab-btn px-4 py-2 rounded-2xl text-slate-300 hover:text-white hover:bg-slate-900">
+                    <i class="fa-solid fa-book-open mr-2 text-emerald-300" aria-hidden="true"></i>Library
+                    <span class="ml-1.5 text-[10px] font-extrabold bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded-lg" id="tab-pages-badge">0</span>
+                </button>
+                <button role="tab" id="tab-dictionary" data-tab="dictionary" aria-controls="panel-dictionary" aria-selected="false" tabindex="-1"
+                        class="tab-btn px-4 py-2 rounded-2xl text-slate-300 hover:text-white hover:bg-slate-900">
+                    <i class="fa-solid fa-spell-check mr-2 text-amber-300" aria-hidden="true"></i>Dictionary
+                </button>
+                <button role="tab" id="tab-tips" data-tab="tips" aria-controls="panel-tips" aria-selected="false" tabindex="-1"
+                        class="tab-btn px-4 py-2 rounded-2xl text-slate-300 hover:text-white hover:bg-slate-900">
+                    <i class="fa-solid fa-lightbulb mr-2 text-yellow-300" aria-hidden="true"></i>Tips
+                </button>
             </div>
         </div>
-    </nav>
+    </header>
 
+    <main id="main">
     <!-- ===================================================================
-         HERO
+         OVERVIEW — the command center (real numbers, no marketing)
          =================================================================== -->
-    <div class="max-w-screen-2xl mx-auto px-5 md:px-8 pt-8 pb-2">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div class="lg:col-span-7">
-                <div class="max-w-2xl">
-                    <div class="inline-flex items-center gap-x-2 px-3.5 py-1.5 rounded-3xl bg-slate-900 border border-slate-700 mb-5">
-                        <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                        <span id="hero-badge" class="ml-1 text-xs font-semibold tracking-wider">
-                            Every site merged • <span id="hero-pages">—</span> pages across <span id="hero-modules">—</span> modules
-                        </span>
-                    </div>
+    <section role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0"
+             class="max-w-screen-2xl mx-auto px-4 md:px-7 pt-5 pb-10 focus:outline-none">
 
-                    <h1 class="text-5xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tighter font-extrabold">
-                        One app for<br><span class="gradient-text">all your Arabic</span>.
-                    </h1>
+        <!-- KPI strip -->
+        <h2 class="sr-only">Key numbers</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2.5">
+            <button onclick="startAnkiSession()" class="modern-card text-left dark-glass rounded-3xl p-4 border border-indigo-500/30">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-extrabold tracking-widest text-indigo-300">DUE NOW</span>
+                    <i class="fa-solid fa-bolt text-indigo-300" aria-hidden="true"></i>
+                </div>
+                <div class="text-4xl font-extrabold stat-number mt-1"><span id="stat-due">—</span></div>
+                <div class="text-[11px] text-slate-400 mt-0.5">cards ready • click to review</div>
+            </button>
 
-                    <p class="mt-5 text-lg md:text-xl text-slate-400 max-w-xl">
-                        The Lebanese Anki engine — spaced repetition, transliteration-first, a
-                        105,000-word dictionary — now wrapped around <span class="text-slate-200 font-semibold">every lesson,
-                        reading, listening drill, grammar page, game and teacher tool</span> from the old sites.
-                    </p>
+            <div class="dark-glass rounded-3xl p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-extrabold tracking-widest text-slate-400">MASTERY</span>
+                    <i class="fa-solid fa-trophy text-emerald-300" aria-hidden="true"></i>
+                </div>
+                <div class="flex items-baseline gap-x-1.5 mt-1">
+                    <span id="mastered-count" class="text-4xl font-extrabold stat-number">—</span>
+                    <span class="text-xs text-slate-400 font-bold">/ <span id="mastered-total">—</span></span>
+                </div>
+                <div class="mt-2 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div id="mastered-bar" class="h-1.5 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full mini-bar" style="width:0%"></div>
+                </div>
+                <div class="text-[11px] text-emerald-300 font-bold mt-1"><span id="mastered-pct">—</span> of the learnable deck</div>
+            </div>
 
-                    <div class="flex flex-wrap items-center gap-3 mt-8">
-                        <button onclick="document.getElementById('anki').scrollIntoView({ behavior: 'smooth' })"
-                                class="modern-btn flex items-center px-7 py-3.5 bg-white text-slate-900 font-semibold rounded-3xl text-base shadow-lg hover:shadow-xl hover:scale-[1.02]">
-                            <i class="fa-solid fa-play mr-2.5"></i>
-                            <span>Start Anki Review</span>
-                        </button>
-                        <button onclick="document.getElementById('library').scrollIntoView({ behavior: 'smooth' })"
-                                class="px-6 py-3.5 flex items-center gap-x-2 font-medium rounded-3xl border border-slate-700 hover:bg-slate-900 transition-colors">
-                            <i class="fa-solid fa-layer-group text-indigo-300"></i>
-                            <span>Browse the library</span>
-                        </button>
-                        <button onclick="HUB.surprise()"
-                                class="px-6 py-3.5 flex items-center gap-x-2 font-medium rounded-3xl border border-slate-700 hover:bg-slate-900 transition-colors">
-                            <i class="fa-solid fa-shuffle text-emerald-300"></i>
-                            <span>Surprise me</span>
-                        </button>
-                    </div>
+            <div class="dark-glass rounded-3xl p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-extrabold tracking-widest text-slate-400">LEARNABLE DECK</span>
+                    <i class="fa-solid fa-clone text-violet-300" aria-hidden="true"></i>
+                </div>
+                <div class="text-4xl font-extrabold stat-number mt-1"><span id="kpi-learnable">—</span></div>
+                <div class="flex gap-x-3 text-[11px] mt-1 font-bold">
+                    <span class="text-sky-300"><span id="ov-new">—</span> new</span>
+                    <span class="text-amber-300"><span id="ov-learning">—</span> learning</span>
+                    <span class="text-emerald-300"><span id="ov-mature">—</span> mature</span>
                 </div>
             </div>
 
-            <div class="lg:col-span-5">
-                <div class="glass rounded-3xl p-1 shadow-2xl">
-                    <div class="bg-slate-900 rounded-[2.25rem] p-5">
-                        <div class="grid grid-cols-2 gap-5">
-                            <div>
-                                <div class="text-xs font-bold text-slate-400">DICTIONARY WORDS</div>
-                                <div class="text-4xl font-extrabold mt-0.5 stat-number"><span id="hero-total">—</span></div>
-                                <div class="text-emerald-300 text-xs font-bold mt-0.5">MSA + Levantine + dialects</div>
-                            </div>
-                            <div>
-                                <div class="text-xs font-bold text-slate-400">LESSON PAGES</div>
-                                <div class="text-4xl font-extrabold mt-0.5 stat-number"><span id="stat-pages">—</span></div>
-                                <div class="text-indigo-300 text-xs font-bold mt-0.5">all sites combined</div>
-                            </div>
-                            <div>
-                                <div class="text-xs font-bold text-slate-400">MODULES</div>
-                                <div class="text-4xl font-extrabold mt-0.5 stat-number"><span id="stat-modules">—</span></div>
-                                <div class="text-violet-300 text-xs font-bold mt-0.5">one navigation</div>
-                            </div>
-                            <div>
-                                <div class="text-xs font-bold text-slate-400">AUDIO ITEMS</div>
-                                <div class="text-4xl font-extrabold mt-0.5 stat-number"><span id="stat-audio">—</span></div>
-                                <div class="text-orange-300 text-xs font-bold mt-0.5">listening library</div>
-                            </div>
+            <div class="dark-glass rounded-3xl p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-extrabold tracking-widest text-slate-400">DICTIONARY</span>
+                    <i class="fa-solid fa-book text-amber-300" aria-hidden="true"></i>
+                </div>
+                <div class="text-4xl font-extrabold stat-number mt-1"><span id="hero-total">—</span></div>
+                <div class="text-[11px] text-slate-400 mt-0.5">MSA + Levantine + dialects</div>
+                <button onclick="HUB.tab('dictionary')" class="text-[11px] font-bold text-amber-300 hover:text-amber-200 mt-1">Browse →</button>
+            </div>
+
+            <button onclick="HUB.tab('library')" class="modern-card text-left dark-glass rounded-3xl p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-extrabold tracking-widest text-slate-400">LESSON PAGES</span>
+                    <i class="fa-solid fa-book-open text-emerald-300" aria-hidden="true"></i>
+                </div>
+                <div class="text-4xl font-extrabold stat-number mt-1"><span id="stat-pages">—</span></div>
+                <div class="text-[11px] text-slate-400 mt-0.5"><span id="stat-modules">—</span> modules merged</div>
+            </button>
+
+            <button onclick="HUB.tab('library');HUB.setKind('audio')" class="modern-card text-left dark-glass rounded-3xl p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-extrabold tracking-widest text-slate-400">AUDIO</span>
+                    <i class="fa-solid fa-headphones text-orange-300" aria-hidden="true"></i>
+                </div>
+                <div class="text-4xl font-extrabold stat-number mt-1"><span id="stat-audio">—</span></div>
+                <div class="text-[11px] text-slate-400 mt-0.5">items • ≈<span id="stat-minutes">—</span> min of listening</div>
+            </button>
+        </div>
+
+        <!-- Row B: forecast · composition · next actions -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-2.5 mt-2.5">
+            <div class="xl:col-span-5 chart-card rounded-3xl p-5">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="font-display text-lg font-extrabold tracking-tight">Review forecast</h3>
+                        <p class="text-xs text-slate-400">Cards scheduled by the SM-2 algorithm over the next 14 days</p>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="text-2xl font-extrabold stat-number text-indigo-300" id="forecast-total">—</div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">in 14 days</div>
+                    </div>
+                </div>
+                <div id="forecast-chart" class="mt-4"></div>
+                <div id="forecast-legend" class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-400 mt-3"></div>
+            </div>
+
+            <div class="xl:col-span-3 chart-card rounded-3xl p-5">
+                <h3 class="font-display text-lg font-extrabold tracking-tight">Deck composition</h3>
+                <p class="text-xs text-slate-400">Where your Lebanese cards sit right now</p>
+                <div class="flex items-center gap-4 mt-3">
+                    <div id="donut-chart" class="shrink-0"></div>
+                    <div id="donut-legend" class="text-xs space-y-1.5 min-w-0 flex-1"></div>
+                </div>
+            </div>
+
+            <div class="xl:col-span-4 chart-card rounded-3xl p-5 flex flex-col">
+                <h3 class="font-display text-lg font-extrabold tracking-tight">Do this next</h3>
+                <p class="text-xs text-slate-400">Shortcuts into the parts of the app that matter today</p>
+                <div class="grid grid-cols-2 gap-2 mt-3">
+                    <button onclick="startAnkiSession()" class="text-left bg-indigo-500 hover:bg-indigo-400 text-white rounded-2xl px-4 py-3 transition-colors">
+                        <i class="fa-solid fa-play mb-1.5" aria-hidden="true"></i>
+                        <div class="font-extrabold text-sm leading-tight">Review <span id="due-btn-count">—</span> cards</div>
+                        <div class="text-[11px] opacity-80">SM-2 spaced repetition</div>
+                    </button>
+                    <button onclick="HUB.resume()" class="text-left bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3 transition-colors">
+                        <i class="fa-solid fa-rotate-left mb-1.5 text-emerald-300" aria-hidden="true"></i>
+                        <div class="font-extrabold text-sm leading-tight" id="resume-label">Resume lesson</div>
+                        <div class="text-[11px] text-slate-400">last page you opened</div>
+                    </button>
+                    <button onclick="HUB.surprise()" class="text-left bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3 transition-colors">
+                        <i class="fa-solid fa-shuffle mb-1.5 text-violet-300" aria-hidden="true"></i>
+                        <div class="font-extrabold text-sm leading-tight">Random lesson</div>
+                        <div class="text-[11px] text-slate-400">from <span id="surprise-count">—</span> pages</div>
+                    </button>
+                    <button onclick="HUB.goto('translit')" class="text-left bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3 transition-colors">
+                        <i class="fa-solid fa-keyboard mb-1.5 text-amber-300" aria-hidden="true"></i>
+                        <div class="font-extrabold text-sm leading-tight">Transliteration lab</div>
+                        <div class="text-[11px] text-slate-400">3 · 7 · 9 · 2 drills</div>
+                    </button>
+                </div>
+
+                <!-- Word of the day, compact -->
+                <div class="mt-3 rounded-2xl border border-indigo-900/50 bg-indigo-500/5 p-3.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-extrabold tracking-widest text-indigo-300"><i class="fa-solid fa-star mr-1" aria-hidden="true"></i>WORD OF THE DAY</span>
+                        <div class="flex gap-1.5">
+                            <button id="dod-listen" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700" aria-label="Listen to the word of the day"><i class="fa-solid fa-volume-high text-xs" aria-hidden="true"></i></button>
+                            <button id="dod-review" class="w-8 h-8 rounded-xl bg-indigo-500 hover:bg-indigo-400" aria-label="Open this card"><i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i></button>
                         </div>
                     </div>
+                    <div class="flex items-baseline gap-x-2.5 flex-wrap mt-1.5">
+                        <span id="dod-arabic" class="arabic-text text-2xl font-extrabold text-white">—</span>
+                        <span id="dod-translit" class="text-base font-extrabold text-indigo-300">—</span>
+                    </div>
+                    <div class="text-sm font-bold mt-0.5"><span id="dod-english">—</span>
+                        <span id="dod-cat" class="text-[11px] text-slate-400 ml-1.5 font-medium"></span></div>
+                    <div class="text-[11px] text-slate-400 mt-0.5 truncate" id="dod-example">—</div>
                 </div>
             </div>
         </div>
 
-        <!-- recently opened across the merged site -->
-        <div class="mt-8">
-            <div class="flex items-center gap-x-2 mb-2.5 text-xs font-bold uppercase tracking-wider text-slate-500">
-                <i class="fa-solid fa-clock-rotate-left"></i> Continue where you left off
+        <!-- Row C: category mastery · content map -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-2.5 mt-2.5">
+            <div class="xl:col-span-6 chart-card rounded-3xl p-5">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="font-display text-lg font-extrabold tracking-tight">Mastery by category</h3>
+                        <p class="text-xs text-slate-400">Mature cards (interval ≥ 10 days) per topic — click a row to drill it</p>
+                    </div>
+                    <div class="hidden sm:flex items-center gap-x-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        <span><span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1" aria-hidden="true"></span>mature</span>
+                        <span><span class="inline-block w-2 h-2 rounded-full bg-slate-700 mr-1" aria-hidden="true"></span>remaining</span>
+                    </div>
+                </div>
+                <div id="category-bars" class="mt-3 space-y-2"></div>
             </div>
-            <div id="recent-list" class="flex gap-3 overflow-x-auto hub-scroll pb-2"></div>
-        </div>
-    </div>
 
-{{SECTIONS_CORE}}
+            <div class="xl:col-span-6 chart-card rounded-3xl p-5">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="font-display text-lg font-extrabold tracking-tight">Content map</h3>
+                        <p class="text-xs text-slate-400">Every merged module by page count — click to open it in the library</p>
+                    </div>
+                    <button onclick="HUB.tab('library')" class="text-[11px] font-bold text-indigo-300 hover:text-indigo-200 shrink-0">Open library →</button>
+                </div>
+                <div id="module-bars" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-1.5"></div>
+                <div class="mt-4 pt-3 border-t border-slate-800">
+                    <div class="text-[10px] font-extrabold tracking-widest text-slate-500 mb-2">BY TYPE</div>
+                    <div id="type-mix" class="flex flex-wrap gap-1.5"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Continue + jump back in -->
+        <div class="mt-2.5 chart-card rounded-3xl p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-display text-lg font-extrabold tracking-tight">
+                    <i class="fa-solid fa-clock-rotate-left text-slate-400 mr-2 text-base" aria-hidden="true"></i>Continue where you left off
+                </h3>
+                <button onclick="HUB.tab('library')" class="text-[11px] font-bold text-indigo-300 hover:text-indigo-200">Browse all →</button>
+            </div>
+            <div id="recent-list" class="flex gap-2.5 overflow-x-auto hub-scroll pb-2"></div>
+        </div>
+    </section>
 
     <!-- ===================================================================
-         LIBRARY — every page from every old site, searchable
+         STUDY — Anki SRS, transliteration lab, practice drills
          =================================================================== -->
-    <div id="library" class="max-w-screen-2xl mx-auto px-5 md:px-8 pt-4 pb-10">
-        <div class="flex flex-wrap items-end justify-between gap-4 mb-5 px-1">
-            <div>
-                <h2 class="font-display text-3xl font-extrabold tracking-tighter">The Library</h2>
-                <p class="text-slate-400">
-                    Every page of the old sites in one index —
-                    <span class="text-slate-200 font-semibold"><span id="library-count">—</span></span> results,
-                    showing <span id="library-shown">0</span>.
-                </p>
+    <section role="tabpanel" id="panel-study" aria-labelledby="tab-study" tabindex="0" hidden class="focus:outline-none">
+        <nav aria-label="Study sections" class="max-w-screen-2xl mx-auto px-4 md:px-7 pt-4">
+            <div class="flex flex-wrap gap-1.5 text-xs font-bold">
+                <button onclick="HUB.goto('anki')" class="px-3.5 py-2 rounded-2xl bg-slate-900 border border-slate-700 hover:border-indigo-400"><i class="fa-solid fa-clone mr-1.5 text-indigo-300" aria-hidden="true"></i>Flashcards &amp; deck</button>
+                <button onclick="HUB.goto('translit')" class="px-3.5 py-2 rounded-2xl bg-slate-900 border border-slate-700 hover:border-indigo-400"><i class="fa-solid fa-keyboard mr-1.5 text-amber-300" aria-hidden="true"></i>Transliteration lab</button>
+                <button onclick="HUB.goto('practice')" class="px-3.5 py-2 rounded-2xl bg-slate-900 border border-slate-700 hover:border-indigo-400"><i class="fa-solid fa-dumbbell mr-1.5 text-emerald-300" aria-hidden="true"></i>Practice drills</button>
             </div>
-            <button onclick="HUB.reset()" class="text-xs font-bold px-4 py-2 rounded-2xl border border-slate-700 hover:bg-slate-900">
-                <i class="fa-solid fa-rotate-left mr-1.5"></i>Reset filters
-            </button>
-        </div>
-
-        <div class="dark-glass border border-slate-800 rounded-3xl p-5">
-            <div class="relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                <input id="library-search" type="search" autocomplete="off"
-                       placeholder="Search 260+ pages — English, Arabic (كتابة), or file name…"
-                       class="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 outline-none rounded-3xl pl-12 pr-5 py-3.5 text-base placeholder:text-slate-600">
-            </div>
-
-            <div class="mt-4">
-                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Module</div>
-                <div id="module-chips" class="flex flex-wrap gap-2"></div>
-            </div>
-
-            <div class="mt-4">
-                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Type</div>
-                <div id="kind-chips" class="flex flex-wrap gap-2"></div>
-            </div>
-        </div>
-
-        <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 mt-5"></div>
-
-        <div class="flex justify-center mt-6">
-            <button id="library-more" onclick="HUB.more()"
-                    class="px-7 py-3 rounded-3xl bg-slate-900 border border-slate-700 hover:border-slate-500 text-sm font-bold">
-                Load more
-            </button>
-        </div>
-    </div>
+        </nav>
+{{SECTIONS_STUDY}}
+    </section>
 
     <!-- ===================================================================
-         MODULES — the old sites, as one grid
+         LIBRARY — every page of every old site
          =================================================================== -->
-    <div id="modules" class="max-w-screen-2xl mx-auto px-5 md:px-8 pt-2 pb-10">
-        <div class="mb-5 px-1">
-            <h2 class="font-display text-3xl font-extrabold tracking-tighter">Modules</h2>
-            <p class="text-slate-400">Each of these used to be its own little site. Tap one to filter the library.</p>
+    <section role="tabpanel" id="panel-library" aria-labelledby="tab-library" tabindex="0" hidden class="focus:outline-none">
+        <nav aria-label="Library sections" class="max-w-screen-2xl mx-auto px-4 md:px-7 pt-4">
+            <div class="flex flex-wrap gap-1.5 text-xs font-bold">
+                <button onclick="HUB.goto('library')" class="px-3.5 py-2 rounded-2xl bg-slate-900 border border-slate-700 hover:border-emerald-400"><i class="fa-solid fa-magnifying-glass mr-1.5 text-emerald-300" aria-hidden="true"></i>Search pages</button>
+                <button onclick="HUB.goto('modules')" class="px-3.5 py-2 rounded-2xl bg-slate-900 border border-slate-700 hover:border-emerald-400"><i class="fa-solid fa-grip mr-1.5 text-violet-300" aria-hidden="true"></i>Modules</button>
+                <button onclick="HUB.goto('media')" class="px-3.5 py-2 rounded-2xl bg-slate-900 border border-slate-700 hover:border-emerald-400"><i class="fa-solid fa-headphones mr-1.5 text-orange-300" aria-hidden="true"></i>Audio library</button>
+            </div>
+        </nav>
+        <div id="library" class="max-w-screen-2xl mx-auto px-4 md:px-7 pt-5 pb-10">
+            <div class="flex flex-wrap items-end justify-between gap-4 mb-4 px-1">
+                <div>
+                    <h2 class="font-display text-2xl font-extrabold tracking-tighter">The Library</h2>
+                    <p class="text-sm text-slate-400">
+                        Every page of the old sites in one index —
+                        <span class="text-slate-200 font-semibold" aria-live="polite"><span id="library-count">—</span> results</span>,
+                        showing <span id="library-shown">0</span>.
+                    </p>
+                </div>
+                <button onclick="HUB.reset()" class="text-xs font-bold px-4 py-2 rounded-2xl border border-slate-700 hover:bg-slate-900">
+                    <i class="fa-solid fa-rotate-left mr-1.5" aria-hidden="true"></i>Reset filters
+                </button>
+            </div>
+
+            <div class="dark-glass border border-slate-800 rounded-3xl p-4">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden="true"></i>
+                    <label for="library-search" class="sr-only">Search all lesson pages</label>
+                    <input id="library-search" type="search" autocomplete="off"
+                           placeholder="Search 260+ pages — English, Arabic (كتابة), or file name…"
+                           class="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 outline-none rounded-3xl pl-12 pr-5 py-3 text-base placeholder:text-slate-600">
+                </div>
+                <div class="mt-3.5">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5" id="module-chips-label">Module</div>
+                    <div id="module-chips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="module-chips-label"></div>
+                </div>
+                <div class="mt-3">
+                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5" id="kind-chips-label">Type</div>
+                    <div id="kind-chips" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="kind-chips-label"></div>
+                </div>
+            </div>
+
+            <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 mt-4"></div>
+
+            <div class="flex justify-center mt-5">
+                <button id="library-more" onclick="HUB.more()"
+                        class="px-7 py-3 rounded-3xl bg-slate-900 border border-slate-700 hover:border-slate-500 text-sm font-bold">
+                    Load more
+                </button>
+            </div>
         </div>
-        <div id="module-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5"></div>
-    </div>
+
+        <div id="modules" class="max-w-screen-2xl mx-auto px-4 md:px-7 pt-2 pb-10">
+            <div class="mb-4 px-1">
+                <h2 class="font-display text-2xl font-extrabold tracking-tighter">Modules</h2>
+                <p class="text-sm text-slate-400">Each of these used to be its own little site. Tap one to filter the library.</p>
+            </div>
+            <div id="module-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5"></div>
+        </div>
+
+        <div id="media" class="max-w-screen-2xl mx-auto px-4 md:px-7 pt-2 pb-10">
+            <div class="mb-4 px-1">
+                <h2 class="font-display text-2xl font-extrabold tracking-tighter">Audio library</h2>
+                <p class="text-sm text-slate-400">All recordings from the listening modules, playable right here.</p>
+            </div>
+            <div id="media-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5"></div>
+        </div>
+    </section>
 
     <!-- ===================================================================
-         AUDIO LIBRARY
+         DICTIONARY
          =================================================================== -->
-    <div id="media" class="max-w-screen-2xl mx-auto px-5 md:px-8 pt-2 pb-10">
-        <div class="mb-5 px-1">
-            <h2 class="font-display text-3xl font-extrabold tracking-tighter">Audio Library</h2>
-            <p class="text-slate-400">All recordings from the listening modules, playable right here.</p>
-        </div>
-        <div id="media-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5"></div>
-    </div>
-
-{{SECTIONS_REST}}
+    <section role="tabpanel" id="panel-dictionary" aria-labelledby="tab-dictionary" tabindex="0" hidden class="focus:outline-none">
+{{SECTIONS_DICT}}
+    </section>
 
     <!-- ===================================================================
-         IN-APP VIEWER — opens any merged page inside the LebLearn shell
+         TIPS
          =================================================================== -->
-    <div id="viewer" class="hidden fixed inset-0 z-[200] bg-slate-950 flex flex-col">
+    <section role="tabpanel" id="panel-tips" aria-labelledby="tab-tips" tabindex="0" hidden class="focus:outline-none">
+{{SECTIONS_TIPS}}
+    </section>
+    </main>
+
+{{MODALS}}
+
+    <!-- ===================================================================
+         IN-APP VIEWER
+         =================================================================== -->
+    <div id="viewer" class="hidden fixed inset-0 z-[200] bg-slate-950 flex flex-col" role="dialog" aria-modal="true" aria-labelledby="viewer-title">
         <div class="flex items-center gap-x-3 px-4 md:px-6 py-3 border-b border-slate-800 bg-slate-950">
-            <button onclick="HUB.close()" class="w-10 h-10 shrink-0 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 flex items-center justify-center">
-                <i class="fa-solid fa-arrow-left"></i>
+            <button onclick="HUB.close()" class="w-10 h-10 shrink-0 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 flex items-center justify-center" aria-label="Back to the hub">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
             </button>
             <div class="min-w-0 flex-1">
                 <div id="viewer-title" class="font-bold truncate">—</div>
@@ -257,22 +453,22 @@
             </div>
             <a id="viewer-open" href="#" target="_blank" rel="noopener"
                class="hidden sm:flex items-center gap-x-2 px-4 py-2 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 text-xs font-bold">
-                <i class="fa-solid fa-up-right-from-square"></i> Open in new tab
+                <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i> Open in new tab
             </a>
-            <button onclick="HUB.close()" class="w-10 h-10 shrink-0 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 flex items-center justify-center">
-                <i class="fa-solid fa-xmark"></i>
+            <button onclick="HUB.close()" class="w-10 h-10 shrink-0 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 flex items-center justify-center" aria-label="Close the lesson viewer">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
         </div>
         <iframe id="viewer-frame" src="about:blank" class="flex-1 w-full border-0" title="Lesson viewer"></iframe>
     </div>
 
-    <footer class="max-w-screen-2xl mx-auto px-8 py-8 text-xs text-center text-slate-400 border-t border-slate-800">
-        <div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2">
-            <div>Powered by Anki SM-2 spaced repetition</div>
-            <div class="w-[1px] h-2.5 bg-slate-700"></div>
-            <div>Transliteration-first Lebanese Arabic</div>
-            <div class="w-[1px] h-2.5 bg-slate-700"></div>
-            <div><span id="stat-pages-foot"></span>Merged hub: Grammar • Vocabulary • Reading • Listening • Culture • Minorities • Games • Egyptian Arabic • Teacher tools • AI • ML</div>
+    <footer class="max-w-screen-2xl mx-auto px-7 py-6 text-[11px] text-center text-slate-500 border-t border-slate-800">
+        <div class="flex flex-wrap justify-center items-center gap-x-3 gap-y-1">
+            <span>Anki SM-2 spaced repetition</span>
+            <span class="w-px h-2.5 bg-slate-700" aria-hidden="true"></span>
+            <span>Transliteration-first Lebanese Arabic</span>
+            <span class="w-px h-2.5 bg-slate-700" aria-hidden="true"></span>
+            <span>Merged: Grammar • Vocabulary • Reading • Listening • Culture • Minorities • Games • Egyptian Arabic • Teacher tools • AI • ML</span>
         </div>
     </footer>
 

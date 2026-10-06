@@ -19,26 +19,37 @@ index.html                 ← the merged hub (LebLearn shell + everything else)
 
 ## What the hub contains
 
-| Section | What it is |
+The app is organised as **five tabs** instead of one endless scroll:
+
+| Tab | What's in it |
 | --- | --- |
-| **Dashboard** | Streak, due cards, mastery and category progress (from the Lebanese Anki app) |
-| **Anki SRS** | The SM-2 flashcard review, 105,252 cards: curated Lebanese deck + MSA / Levantine / dialect reference |
-| **Library** | **All 264 pages from every old module**, searchable in English *and* Arabic, filterable by module and by type (lesson / audio / quiz / game / flashcards / tool / overview) |
-| **Modules** | The old sites as one grid — tap a module to filter the library |
-| **Audio Library** | Every `.mp3` / `.wav` in the repo, playable inline |
-| **Transliteration Lab** | The 3/7/9/2 transliteration trainer |
-| **Practice** | Typing, multiple choice, listening and matching drills |
+| **Overview** | A command center, not a landing page: live KPIs (due now, mastery, learnable deck, dictionary size, lesson pages, audio minutes), a **14-day review forecast** bar chart with overdue stacked onto today, a **deck-composition donut** (new / learning / mature), **mastery-by-category** bars, a **content map** of all merged modules by page count, a type breakdown, "do this next" shortcuts, word of the day, and your recently opened lessons |
+| **Study** | Anki SM-2 flashcards + deck browser (105,252 cards), the transliteration lab, and the practice drills |
+| **Library** | **All 264 pages from every old module**, searchable in English *and* Arabic, filterable by module and by type (lesson / audio / quiz / game / flashcards / tool / overview), plus the module grid and the audio library |
 | **Dictionary** | The full searchable word table with transliterations |
 | **Tips** | Lebanese-specific learning notes |
 
+Every number on the Overview tab is computed at runtime from the live deck and
+the generated catalog — the old dashboard's hard-coded "47-day streak / 38
+reviewed today / 96% efficiency" tiles are gone. Charts are hand-rolled inline
+SVG (no chart library, no extra network request) and each one exposes a text
+summary to screen readers.
+
 Lessons open **inside** the hub in a viewer (title bar, back button, "open in new
 tab"), so you never leave the app. Deep links work too:
-`index.html#view=Grammar/dual.html`.
+`index.html#view=Grammar/dual.html`, or `#library`, `#study`, `#practice`, `#media`…
 Every page also got a floating **LebLearn Hub** pill, so pages opened directly
 still lead back into the merged app. Recently opened lessons are remembered in
-`localStorage` and shown under the hero.
+`localStorage`.
 
-Keyboard: `⌘K` / `Ctrl+K` jumps to the library search, `Esc` closes the viewer.
+### Accessibility & interaction
+
+* Proper `tablist` / `tab` / `tabpanel` semantics with arrow-key, Home/End navigation
+* `⌘K` / `Ctrl+K` jumps to the library search, `Esc` closes the viewer
+* Skip-to-content link, visible focus rings, `aria-pressed` filter chips, live result count
+* Charts carry `role="img"` + `aria-label`, bars have `<title>` tooltips, and every
+  chart row is a real button (click a category to drill it, a module to filter the library)
+* `prefers-reduced-motion` disables the animations and the shimmer effect
 
 ## Running it
 
