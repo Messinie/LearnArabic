@@ -49,6 +49,28 @@ def tighten(html):
     return html.replace("max-w-screen-2xl mx-auto px-8", "max-w-screen-2xl mx-auto px-4 md:px-7")
 
 
+# The Transliteration Lab's "Key Lebanese Sounds" card was a static list of
+# chat-alphabet digits; swap it for a live panel that follows the chosen
+# transliteration style (assets/leb-translit.js renders it).
+sound_card_start = "<!-- Key sounds -->"
+sound_card_end = '<div class="dark-glass rounded-3xl p-5">\n                <div class="font-bold mb-3">Transliteration Drills'
+assert sound_card_start in translit_practice and sound_card_end in translit_practice
+head, tail = translit_practice.split(sound_card_start, 1)
+_, tail = tail.split(sound_card_end, 1)
+translit_practice = (head
+                     + '<!-- live sound key, follows the transliteration setting -->\n'
+                     + '            <div id="sound-key" class="dark-glass rounded-3xl p-5"></div>\n            '
+                     + sound_card_end + tail)
+
+# the static "Sa7tayn" sample in the third card is rendered by the engine now
+translit_practice = translit_practice.replace(
+    '<div class="text-xs text-slate-300">Sa7tayn</div>',
+    '<div class="text-xs text-slate-300" data-translit="Sa7tayn">Sa7tayn</div>')
+
+anki = anki.replace(
+    '<div class="text-xs font-bold text-indigo-300 translit-highlight">Mar7aba</div>',
+    '<div class="text-xs font-bold text-indigo-300 translit-highlight" data-translit="Mar7aba">Mar7aba</div>')
+
 study = tighten(anki + "\n" + translit_practice)
 vocab = tighten(vocab)
 tips = tighten(tips)
@@ -66,9 +88,13 @@ print("index.html written: %.1f KB" % ((ROOT / "index.html").stat().st_size / 10
 required = ('id="anki-modal"', 'id="deck-modal"', 'id="tip-modal"', 'id="library-grid"',
             'id="viewer-frame"', 'assets/leb-data.js', 'id="practice"', 'id="vocab-table-body"',
             'id="forecast-chart"', 'id="donut-chart"', 'id="category-bars"', 'id="module-bars"',
+            'id="sound-key"', 'assets/leb-translit.js', 'assets/leb-speech.js', 'assets/leb-prefs.js',
+            'wordmark', 'id="translit-toggle"',
             'id="tips-grid"', 'id="category-grid"', 'role="tablist"')
 for needle in required:
     assert needle in out, needle
 assert "{{" not in out, "unreplaced placeholder"
 assert "Learning Dashboard" not in out, "old demo dashboard leaked in"
+assert "Key Lebanese Sounds" not in out, "static sound card leaked in"
+assert out.count('data-translit=') >= 2, "static transliteration samples not tagged"
 print("sanity checks OK")

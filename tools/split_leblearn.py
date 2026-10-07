@@ -66,6 +66,52 @@ app_js = app_js.replace(
 )
 assert "try { saved = localStorage.getItem('lebanese-anki-cards') }" in app_js
 
+# ---------------------------------------------------------------------------
+# Transliteration-style awareness (assets/leb-translit.js can rewrite the chat
+# alphabet into plain letters). Searches and typed answers must accept BOTH
+# spellings, so route them through the helpers that module installs.
+# ---------------------------------------------------------------------------
+_PATCHES = [
+    # deck browser search
+    ("""                const filtered = cards.filter(card =>
+                    card.english.toLowerCase().includes(searchVal) ||
+                    card.arabic.toLowerCase().includes(searchVal) ||
+                    card.translit.toLowerCase().includes(searchVal)
+                )""",
+     """                const filtered = cards.filter(card =>
+                    card.english.toLowerCase().includes(searchVal) ||
+                    card.arabic.toLowerCase().includes(searchVal) ||
+                    (window.translitSearch
+                        ? window.translitSearch(card, searchVal)
+                        : card.translit.toLowerCase().includes(searchVal))
+                )"""),
+    # dictionary table search
+    ("""                    filtered = filtered.filter(c =>
+                        c.english.toLowerCase().includes(search) ||
+                        c.translit.toLowerCase().includes(search) ||
+                        c.arabic.toLowerCase().includes(search)
+                    )""",
+     """                    filtered = filtered.filter(c =>
+                        c.english.toLowerCase().includes(search) ||
+                        (window.translitSearch
+                            ? window.translitSearch(c, search)
+                            : c.translit.toLowerCase().includes(search)) ||
+                        c.arabic.toLowerCase().includes(search)
+                    )"""),
+    # "type the transliteration" drill
+    ("""                if (norm(inp.value) === norm(c.translit)) {""",
+     """                if (window.translitMatch
+                        ? window.translitMatch(inp.value, c)
+                        : norm(inp.value) === norm(c.translit)) {"""),
+    # fill-in-the-blank drill (the blank is a transliterated word)
+    ("""                if (norm(inp.value) === norm(s.blank)) {""",
+     """                if (norm(inp.value) === norm(s.blank) ||
+                    (window.TranslitMode && norm(inp.value) === norm(window.TranslitMode.convert(s.__blank || s.blank)))) {"""),
+]
+for _old, _new in _PATCHES:
+    assert _old in app_js, _old[:60]
+    app_js = app_js.replace(_old, _new, 1)
+
 HEADER = (
     "/* ------------------------------------------------------------------\n"
     "   %s\n"

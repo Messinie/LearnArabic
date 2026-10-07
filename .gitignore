@@ -5,3 +5,7 @@ tools/_leb_sections_rest.html
 
 .DS_Store
 node_modules/
+
+# local test harness (jsdom)
+package.json
+package-lock.json

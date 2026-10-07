@@ -13,7 +13,10 @@ index.html                 ← the merged hub (LebLearn shell + everything else)
 ├── assets/leb-data.js     ← seed deck + curated dictionaries + 105k-word reference
 ├── assets/leb-app.js      ← the LebLearn engine (SM-2 SRS, quizzes, drills, tables)
 ├── assets/catalog.js      ← generated index of all 264 pages + 14 audio files
-├── assets/hub.js          ← library search / module grid / in-app viewer / recents
+├── assets/hub.js          ← tabs, overview charts, library search, in-app viewer
+├── assets/leb-translit.js ← plain-letters ⇄ chat-alphabet transliteration
+├── assets/leb-speech.js   ← pronunciation audio (voice pick, fallbacks, bug fixes)
+├── assets/leb-prefs.js    ← the Settings dialog
 └── assets/leb-shell.js    ← tiny "back to hub" pill injected into every page
 ```
 
@@ -28,6 +31,42 @@ The app is organised as **five tabs** instead of one endless scroll:
 | **Library** | **All 264 pages from every old module**, searchable in English *and* Arabic, filterable by module and by type (lesson / audio / quiz / game / flashcards / tool / overview), plus the module grid and the audio library |
 | **Dictionary** | The full searchable word table with transliterations |
 | **Tips** | Lebanese-specific learning notes |
+
+### Transliteration style (new, on by default)
+
+Lebanese is normally typed in the Arabic chat alphabet, where digits stand for
+sounds English has no letter for — `mar7aba`, `3afak`, `9ahwe`. That is noise if
+you have never seen it, so the app now ships a **plain letters** mode that is
+**enabled by default** and rewrites every transliteration into letters that still
+sound right:
+
+| chat | plain | example |
+| --- | --- | --- |
+| 7 (ح) | h | mar7aba → **marhaba** |
+| 5 (خ) | kh | 5ayr → **khayr** |
+| 8 (غ) | gh | 8ali → **ghali** |
+| 9 (ق) | q | 9ahwe → **qahwe** |
+| 6 (ط) | t | 6ayyib → **tayyib** |
+| 3 (ع) / 2 (ء) | ’ (dropped at the start of a word) | 3afak → **afak**, ma3lesh → **ma’lesh** |
+
+Standalone numbers (`es-sa3a 5`, `10,000`) are left alone — only digits inside a
+word are sounds. Flip it from the header pill (`marhaba` / `mar7aba`), from
+Settings, or from the Transliteration Lab, which now shows a live sound key in
+the current style. Searches and typed drill answers accept **both** spellings,
+so nothing you already knew stops working.
+
+### Pronunciation audio
+
+The old speaker button frequently did nothing: it read `getVoices()` before the
+browser had populated it, fell back to an English voice that silently refuses
+Arabic glyphs, and cancelled speech in the same tick it queued it (a known way
+to lose the utterance in Chrome). `assets/leb-speech.js` replaces it and:
+
+* waits for the voice list, then picks the best Arabic voice (ar-LB → ar-SY/PS/JO → ar-EG → any `ar`)
+* **falls back to speaking a romanised transliteration** when the device has no Arabic voice, instead of staying silent
+* works around the Chrome cancel/auto-pause bugs and stays synchronous inside the click so iOS Safari allows it
+* shows a small pill with the word being spoken, and reports failures instead of failing quietly
+* lets you pick a specific voice and speaking rate in **Settings** (persisted), with a test button
 
 Every number on the Overview tab is computed at runtime from the live deck and
 the generated catalog — the old dashboard's hard-coded "47-day streak / 38
@@ -50,6 +89,7 @@ still lead back into the merged app. Recently opened lessons are remembered in
 * Charts carry `role="img"` + `aria-label`, bars have `<title>` tooltips, and every
   chart row is a real button (click a category to drill it, a module to filter the library)
 * `prefers-reduced-motion` disables the animations and the shimmer effect
+* Settings is a real dialog now (transliteration style, voice, speed, reset progress) — it used to be a demo with a fake "saved" toast
 
 ## Running it
 

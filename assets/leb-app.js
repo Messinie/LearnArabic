@@ -483,7 +483,9 @@
                 const filtered = cards.filter(card =>
                     card.english.toLowerCase().includes(searchVal) ||
                     card.arabic.toLowerCase().includes(searchVal) ||
-                    card.translit.toLowerCase().includes(searchVal)
+                    (window.translitSearch
+                        ? window.translitSearch(card, searchVal)
+                        : card.translit.toLowerCase().includes(searchVal))
                 )
                 renderDeckTable(filtered)
             }, 150)
@@ -572,7 +574,9 @@
                 if (search) {
                     filtered = filtered.filter(c =>
                         c.english.toLowerCase().includes(search) ||
-                        c.translit.toLowerCase().includes(search) ||
+                        (window.translitSearch
+                            ? window.translitSearch(c, search)
+                            : c.translit.toLowerCase().includes(search)) ||
                         c.arabic.toLowerCase().includes(search)
                     )
                 }
@@ -1105,7 +1109,8 @@
                 const inp = document.getElementById('fb-input')
                 const fb = modal.querySelector('#fb-feedback')
                 const s = picks[i]
-                if (norm(inp.value) === norm(s.blank)) {
+                if (norm(inp.value) === norm(s.blank) ||
+                    (window.TranslitMode && norm(inp.value) === norm(window.TranslitMode.convert(s.__blank || s.blank)))) {
                     score++
                     fb.innerHTML = '<span class="text-emerald-300">✓ Correct: ' + esc(s.blank) + '</span>'
                     inp.style.borderColor = '#34d399'
@@ -1346,7 +1351,9 @@
                 const inp = document.getElementById('tt-input')
                 const c = picks[i]
                 const fb = modal.querySelector('#tt-feedback')
-                if (norm(inp.value) === norm(c.translit)) {
+                if (window.translitMatch
+                        ? window.translitMatch(inp.value, c)
+                        : norm(inp.value) === norm(c.translit)) {
                     score++
                     fb.innerHTML = '<span class="text-emerald-300">✓ Correct: ' + esc(c.translit) + '</span>'
                     inp.style.borderColor = '#34d399'

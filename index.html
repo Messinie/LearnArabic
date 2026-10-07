@@ -7,6 +7,9 @@
     <meta name="description" content="One merged app: the Lebanese Arabic Anki engine (105,000-word dictionary, SM-2 spaced repetition, drills) plus every lesson, reading, listening, grammar, culture, game and teacher tool from the Arabic library.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
     <style>
 
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
@@ -283,6 +286,24 @@
         .hub-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 99px; }
         .hub-scroll::-webkit-scrollbar-track { background: transparent; }
 
+        /* wordmark */
+        .wordmark {
+            font-family: 'Dancing Script', 'Segoe Script', cursive;
+            font-weight: 700;
+            font-size: 1.6rem;
+            line-height: 1;
+            letter-spacing: .5px;
+            background: linear-gradient(100deg, #a5b4fc 0%, #818cf8 35%, #c084fc 70%, #f0abfc 100%);
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent;
+            padding-bottom: 2px;
+        }
+        .wordmark-dot {
+            width: 5px; height: 5px; border-radius: 999px;
+            background: linear-gradient(135deg, #818cf8, #e879f9);
+            box-shadow: 0 0 10px rgba(168,85,247,.8);
+        }
+
         .kbd { font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px;
                border:1px solid #334155; background:#0f172a; color:#94a3b8; }
 
@@ -338,14 +359,10 @@
     <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur-2xl">
         <div class="max-w-screen-2xl mx-auto px-4 md:px-7">
             <div class="py-3 flex items-center justify-between gap-x-4">
-                <a href="#overview" onclick="HUB.tab('overview');return false" class="flex items-center gap-x-2.5 shrink-0">
-                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center rounded-2xl shadow-inner">
-                        <i class="fa-solid fa-language text-white text-xl" aria-hidden="true"></i>
-                    </div>
-                    <div class="leading-none">
-                        <span class="font-display text-2xl font-extrabold tracking-tighter">LebLearn</span>
-                        <span class="text-[10px] tracking-[2.5px] font-medium text-indigo-300 ml-0.5">HUB</span>
-                    </div>
+                <a href="#overview" onclick="HUB.tab('overview');return false"
+                   class="flex items-baseline gap-x-1.5 shrink-0" aria-label="LebLearn home">
+                    <span class="wordmark">LebLearn</span>
+                    <span class="wordmark-dot self-center" aria-hidden="true"></span>
                 </a>
 
                 <!-- live mini-status: always visible, real numbers -->
@@ -371,6 +388,11 @@
                         <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i>
                         <span class="hidden sm:inline">Search</span>
                         <span class="kbd hidden lg:inline">⌘K</span>
+                    </button>
+                    <button id="translit-toggle" onclick="TranslitMode.toggle()"
+                            class="hidden sm:flex items-center h-10 px-3 rounded-2xl bg-slate-900 border border-slate-700 hover:border-indigo-400 text-xs text-indigo-200 transition-colors"
+                            aria-pressed="true" title="Transliteration style">
+                        <span class="font-extrabold">marhaba</span>
                     </button>
                     <button onclick="showSettings()" class="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 flex items-center justify-center" aria-label="Settings">
                         <i class="fa-solid fa-gear text-slate-300" aria-hidden="true"></i>
@@ -709,7 +731,7 @@
                         <div class="flex-1">
                             <div class="text-xs font-medium">Hello</div>
                             <div class="font-bold arabic-text text-lg">مرحبا</div>
-                            <div class="text-xs font-bold text-indigo-300 translit-highlight">Mar7aba</div>
+                            <div class="text-xs font-bold text-indigo-300 translit-highlight" data-translit="Mar7aba">Mar7aba</div>
                         </div>
                         <div class="ml-auto"><span class="text-xs px-2 py-[1px] bg-emerald-900 text-emerald-300 rounded-xl px-1.5 font-semibold" style="font-size: 9.5px;">MATURE</span></div>
                     </div>
@@ -752,41 +774,8 @@
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             
-            <!-- Key sounds -->
-            <div class="dark-glass rounded-3xl p-5">
-                <div class="font-bold mb-3">Key Lebanese Sounds</div>
-                <div class="space-y-3 text-sm">
-                    <div class="flex justify-between items-center px-1 py-1">
-                        <div>
-                            <span class="font-extrabold">3</span> <span class="text-slate-400">(ع)</span>
-                            <span class="ml-2 text-xs">“3ayn” — guttural</span>
-                        </div>
-                        <div class="font-bold text-emerald-300">Mar7aba</div>
-                    </div>
-                    <div class="flex justify-between items-center px-1 py-1">
-                        <div>
-                            <span class="font-extrabold">7</span> <span class="text-slate-400">(ح)</span>
-                            <span class="ml-2 text-xs">“7a” — like “h” but deeper</span>
-                        </div>
-                        <div class="font-bold text-emerald-300">Saba7</div>
-                    </div>
-                    <div class="flex justify-between items-center px-1 py-1">
-                        <div>
-                            <span class="font-extrabold">2</span> <span class="text-slate-400">(ء)</span>
-                            <span class="ml-2 text-xs">Glottal stop</span>
-                        </div>
-                        <div class="font-bold text-emerald-300">2id</div>
-                    </div>
-                    <div class="flex justify-between items-center px-1 py-1">
-                        <div>
-                            <span class="font-extrabold">kh</span> <span class="text-slate-400">(خ)</span>
-                            <span class="ml-2 text-xs">Like Scottish “loch”</span>
-                        </div>
-                        <div class="font-bold text-emerald-300">Khayr</div>
-                    </div>
-                </div>
-            </div>
-            
+            <!-- live sound key, follows the transliteration setting -->
+            <div id="sound-key" class="dark-glass rounded-3xl p-5"></div>
             <div class="dark-glass rounded-3xl p-5">
                 <div class="font-bold mb-3">Transliteration Drills</div>
                 
@@ -833,7 +822,7 @@
                     <div class="flex items-center justify-between mb-2">
                         <div>
                             <span class="text-sm font-bold">صحتين</span>
-                            <div class="text-xs text-slate-300">Sa7tayn</div>
+                            <div class="text-xs text-slate-300" data-translit="Sa7tayn">Sa7tayn</div>
                         </div>
                     </div>
                     
@@ -1346,6 +1335,9 @@
 
     <script src="assets/leb-data.js"></script>
     <script src="assets/leb-app.js"></script>
+    <script src="assets/leb-translit.js"></script>
+    <script src="assets/leb-speech.js"></script>
+    <script src="assets/leb-prefs.js"></script>
     <script src="assets/catalog.js"></script>
     <script src="assets/hub.js"></script>
 </body>
